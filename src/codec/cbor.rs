@@ -100,7 +100,7 @@ pub fn encode(frame: &ConsentFrame, out: &mut [u8]) -> Result<usize, EncodeError
             w.text("consent-withdraw")?;
             w.text("scope")?;
             w.text(f.scope.as_str())?; // §3.1: MUST
-            // §3.4
+                                       // §3.4
             if let Some(rc) = f.reason_code {
                 w.text("reasonCode")?;
                 w.uint(rc.to_u8() as u64)?;
@@ -271,7 +271,9 @@ pub fn decode(data: &[u8]) -> Result<ConsentFrame, DecodeError> {
                 timestamp_us = Some(c.read_uint()?);
             }
             // §7: unknown keys skipped (forward-compat)
-            _ => { c.skip_value(0)?; }
+            _ => {
+                c.skip_value(0)?;
+            }
         }
     }
 
@@ -281,40 +283,59 @@ pub fn decode(data: &[u8]) -> Result<ConsentFrame, DecodeError> {
         FrameType::Withdraw => {
             let s = scope.ok_or(DecodeError::MissingScopeField)?; // §3.1: MUST
             Ok(ConsentFrame::Withdraw(ConsentWithdraw {
-                scope: s, reason_code, reason, epoch, timestamp_ms, timestamp_us,
+                scope: s,
+                reason_code,
+                reason,
+                epoch,
+                timestamp_ms,
+                timestamp_us,
             }))
         }
         FrameType::Suspend => Ok(ConsentFrame::Suspend(ConsentSuspend {
-            reason_code, reason, timestamp_ms, timestamp_us,
+            reason_code,
+            reason,
+            timestamp_ms,
+            timestamp_us,
         })),
         FrameType::Resume => Ok(ConsentFrame::Resume(ConsentResume {
-            timestamp_ms, timestamp_us,
+            timestamp_ms,
+            timestamp_us,
         })),
     }
 }
 
 #[derive(Clone, Copy)]
-enum FrameType { Withdraw, Suspend, Resume }
+enum FrameType {
+    Withdraw,
+    Suspend,
+    Resume,
+}
 
 // ═══════════════════════════════════════════════════════════════════
 //  CBOR PRIMITIVES — with explicit major type rejection
 // ═══════════════════════════════════════════════════════════════════
 
-struct Writer<'a> { buf: &'a mut [u8], pos: usize }
+struct Writer<'a> {
+    buf: &'a mut [u8],
+    pos: usize,
+}
 
 impl<'a> Writer<'a> {
     fn put(&mut self, b: u8) -> Result<(), EncodeError> {
         if self.pos >= self.buf.len() {
             return Err(EncodeError::BufferTooSmall);
         }
-        self.buf[self.pos] = b; self.pos += 1; Ok(())
+        self.buf[self.pos] = b;
+        self.pos += 1;
+        Ok(())
     }
     fn put_slice(&mut self, s: &[u8]) -> Result<(), EncodeError> {
         if self.pos + s.len() > self.buf.len() {
             return Err(EncodeError::BufferTooSmall);
         }
         self.buf[self.pos..self.pos + s.len()].copy_from_slice(s);
-        self.pos += s.len(); Ok(())
+        self.pos += s.len();
+        Ok(())
     }
     fn type_val(&mut self, major: u8, v: u64) -> Result<(), EncodeError> {
         let mt = major << 5;
@@ -336,7 +357,10 @@ impl<'a> Writer<'a> {
     }
 }
 
-struct Cursor<'a> { data: &'a [u8], pos: usize }
+struct Cursor<'a> {
+    data: &'a [u8],
+    pos: usize,
+}
 
 impl<'a> Cursor<'a> {
     fn byte(&mut self) -> Result<u8, DecodeError> {
@@ -349,7 +373,9 @@ impl<'a> Cursor<'a> {
         if self.pos + n > self.data.len() {
             return Err(DecodeError::UnexpectedEof);
         }
-        let s = &self.data[self.pos..self.pos + n]; self.pos += n; Ok(s)
+        let s = &self.data[self.pos..self.pos + n];
+        self.pos += n;
+        Ok(s)
     }
     fn argument(&mut self, ai: u8) -> Result<u64, DecodeError> {
         match ai {
@@ -422,7 +448,10 @@ impl<'a> Cursor<'a> {
                 if arg > MAX_MAP_FIELDS {
                     return Err(DecodeError::MapTooLarge);
                 }
-                for _ in 0..arg { self.skip_value(depth+1)?; self.skip_value(depth+1)?; }
+                for _ in 0..arg {
+                    self.skip_value(depth + 1)?;
+                    self.skip_value(depth + 1)?;
+                }
             }
             // Explicitly reject all unsupported types
             1 => return Err(DecodeError::UnsupportedMajorType(1)), // negative int

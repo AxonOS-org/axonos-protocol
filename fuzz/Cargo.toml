@@ -1,0 +1,22 @@
+[package]
+name = "axonos-consent-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+axonos-consent = { path = ".." }
+
+[[bin]]
+name = "fuzz_cbor_decode"
+path = "fuzz_targets/fuzz_cbor_decode.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_cbor_roundtrip"
+path = "fuzz_targets/fuzz_cbor_roundtrip.rs"
+doc = false

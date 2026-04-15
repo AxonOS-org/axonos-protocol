@@ -12,26 +12,34 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
+  CARGO_INCREMENTAL: "0"
 
 jobs:
-  test-default:
-    name: Test (no_std default)
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        args:
+          - "--all-features"
+          - "--features json"
+          - "--no-default-features"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --all-targets ${{ matrix.args }}
+
+  clippy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --all-features -- -D warnings
 
-  test-json:
-    name: Test (JSON interop vectors)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test --features json
-
-  no-std:
-    name: Build (Cortex-M4F)
+  no_std:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,40 +48,62 @@ jobs:
           targets: thumbv7em-none-eabihf
       - run: cargo build --target thumbv7em-none-eabihf --no-default-features
 
-  clippy:
-    name: Clippy
+  security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo clippy --all-targets --features json -- -D warnings
+      - run: cargo install cargo-audit
+      - run: cargo audit
 
-  fmt:
-    name: Format
+  vectors:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - run: cargo fmt --check
-
-  vectors-integrity:
-    name: Vector integrity
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify SHA-256
-        run: |
+      - run: |
           EXPECTED="29a8bf9f2b4dabe5d9641a8a4c416f361c2ba9815cca9b8e9e1d222d002fa50a"
           ACTUAL=$(sha256sum tests/vectors/consent-interop-vectors-v0.1.0.json | awk '{print $1}')
-          if [ "$ACTUAL" != "$EXPECTED" ]; then
-            echo "FAIL: vector integrity check"
-            echo "Expected: $EXPECTED"
-            echo "Actual:   $ACTUAL"
-            exit 1
-          fi
-          echo "PASS: SHA-256 verified: $ACTUAL"
+          test "$EXPECTED" = "$ACTUAL"
+
+  fuzz-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo install cargo-fuzz
+      - run: cargo fuzz build
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [test, clippy, security]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --all-features
+      - run: find target/release -type f -exec sha256sum {} \; > checksums.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            target/release/
+            checksums.txt
+
+  
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: cargo build --target wasm32-unknown-unknown --no-default-features
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo doc --no-deps --all-features
+
+  

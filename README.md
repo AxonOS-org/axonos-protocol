@@ -2,7 +2,6 @@
 
 ![version](https://img.shields.io/badge/version-0.2.2-blue)
 ![MMP](https://img.shields.io/badge/MMP-v0.2.2-purple)
-![consent](https://img.shields.io/badge/consent--ext-v0.1.0-green)
 ![no\_std](https://img.shields.io/badge/no__std-✓-brightgreen)
 ![unsafe](https://img.shields.io/badge/unsafe-forbidden-red)
 ![alloc](https://img.shields.io/badge/alloc-zero-orange)
@@ -13,20 +12,7 @@
 
 **Deterministic consent enforcement layer for brain-computer interfaces.**
 
-Reference implementation of the [MMP Consent Extension v0.1.0](https://sym.bot/spec/mmp-consent), co-designed with [Hongwei Xu](https://github.com/sym-bot) ([SYM.BOT](https://sym.bot)). Aligned with [Mesh Memory Protocol v0.2.2](https://sym.bot/spec/mmp), Section 16.4.
-
-> *"The consent primitive was designed together — your BCI domain constraints shaped the spec."*
-> — Hongwei Xu, Founder of SYM.BOT
-
----
-
-## Interoperability
-
-Two independent implementations — Rust `#![no_std]` ([axonos-consent](https://github.com/AxonOS-org/axonos-consent)) and Node.js ([sym](https://github.com/sym-bot/sym)) — produce identical state transitions for all canonical test vectors.
-
-**15/15 canonical interop vectors — PASS**
-
-Validated against [SYM.BOT](https://sym.bot) production mesh (5 active nodes, April 2026). Four consent frames (`withdraw`, `suspend`, `resume`, `STIMGUARD_LOCKOUT`) forwarded by relay, silently ignored by all production nodes per MMP §7 forward compatibility. Zero errors across 122 lines of WebSocket log.
+Ref
 
 ### Integrity lock
 

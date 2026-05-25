@@ -1,7 +1,4 @@
-# axonos-consent
 
-![version](https://img.shields.io/badge/version-0.2.2-blue)
-![MMP](https://img.shields.io/badge/MMP-v0.2.2-purple)
 ![no\_std](https://img.shields.io/badge/no__std-✓-brightgreen)
 ![unsafe](https://img.shields.io/badge/unsafe-forbidden-red)
 ![alloc](https://img.shields.io/badge/alloc-zero-orange)
@@ -12,12 +9,6 @@
 
 **Deterministic consent enforcement layer for brain-computer interfaces.**
 
-Ref
-
-### Integrity lock
-
-```
-SHA-256: 29a8bf9f2b4dabe5d9641a8a4c416f361c2ba9815cca9b8e9e1d222d002fa50a
 ```
 Any modification to `tests/vectors/consent-interop-vectors-v0.1.0.json` invalidates the test suite.
 
@@ -184,12 +175,5 @@ Licensed under either of
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
 - MIT License ([LICENSE-MIT](LICENSE-MIT))
 
-at your option.
 
----
 
-## Links
-
-**AxonOS:** [axonos.org](https://axonos.org) · [medium.com/@AxonOS](https://medium.com/@AxonOS) · axonosorg@gmail.com
-
-**SYM.BOT:** [sym.bot](https://sym.bot) · [sym.bot/spec/mmp](https://sym.bot/spec/mmp) · [sym.bot/spec/mmp-consent](https://sym.bot/spec/mmp-consent) · [github.com/sym-bot](https://github.com/sym-bot)

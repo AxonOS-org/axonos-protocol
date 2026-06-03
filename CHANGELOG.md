@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.7.0] - 2026-06-03
+
+### Fixed
+- The MSRV CI job could not parse the version-4 `Cargo.lock`: it pinned Rust 1.74,
+  which predates the v4 lock format (stabilised in 1.78). The declared MSRV is now
+  `1.82.0`, so the MSRV job runs on a toolchain that understands the lockfile.
+- The fuzz build targeted `x86_64-unknown-linux-musl` (the triple of the prebuilt
+  `cargo-fuzz` binary), whose `std` is not installed on the runner and whose static
+  libc is incompatible with AddressSanitizer. Both `cargo fuzz build` and the
+  scheduled fuzz run now pin `--target x86_64-unknown-linux-gnu`.
+
+### Added
+- Tag-triggered release automation (`.github/workflows/release.yml`): pushing a
+  `v*` tag runs the full test suite and publishes a GitHub release with notes
+  extracted from this changelog.
+- Dependabot configuration (`.github/dependabot.yml`) — weekly Cargo (root + fuzz)
+  and GitHub-Actions dependency updates.
+
+### Changed
+- MSRV raised to `rust-version = 1.82.0`.
+
 ## [0.6.0] - 2026-06-03
 
 ### Fixed
@@ -78,6 +99,7 @@ revision (`SPEC.md`) are versioned independently of the crate.
   security-bounded CBOR codec, exhaustive three-state consent machine, reason-code
   registry, StimGuard contract, and frozen interop vectors.
 
+[0.7.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.5.0
 [0.4.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.4.0

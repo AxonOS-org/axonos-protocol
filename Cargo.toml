@@ -1,8 +1,8 @@
 [package]
 name = "axonos-protocol"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
-rust-version = "1.74.0"
+rust-version = "1.82.0"
 authors = ["Denis Yermakou <connect@axonos.org>"]
 description = "The AxonOS Consent Protocol — reference implementation. no_std, zero-alloc, forbid(unsafe): bounded CBOR codec, exhaustive consent state machine, and StimGuard for brain–computer interfaces."
 license = "Apache-2.0 OR MIT"

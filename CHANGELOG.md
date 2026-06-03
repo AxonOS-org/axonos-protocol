@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.6.0] - 2026-06-03
+
+### Fixed
+- `fuzz/Cargo.toml` referenced the pre-0.3.0 crate name (`axonos-consent`), so the
+  fuzz crate failed to resolve its path dependency and `cargo fuzz build` errored
+  with "no matching package named `axonos-consent`". Renamed the fuzz package to
+  `axonos-protocol-fuzz` and its dependency to `axonos-protocol` — completing the
+  0.3.0 crate rename that had missed this manifest.
+
+### Added
+- `deny.toml` and a `cargo deny` CI job (license allow-list, RustSec advisories,
+  and source policy).
+- Declared MSRV (`rust-version = 1.74.0`) and an MSRV CI job that builds on that
+  exact toolchain.
+- Scheduled fuzzing workflow (`.github/workflows/fuzz.yml`) — weekly and on demand,
+  bounded per target.
+
 ## [0.5.0] - 2026-06-03
 
 ### Changed
@@ -61,6 +78,7 @@ revision (`SPEC.md`) are versioned independently of the crate.
   security-bounded CBOR codec, exhaustive three-state consent machine, reason-code
   registry, StimGuard contract, and frozen interop vectors.
 
+[0.6.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.5.0
 [0.4.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.4.0
 [0.3.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.3.0

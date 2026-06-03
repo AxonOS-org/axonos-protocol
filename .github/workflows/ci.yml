@@ -9,27 +9,27 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
   CARGO_INCREMENTAL: "0"
 
 jobs:
-  test:
+  fmt:
+    name: rustfmt
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        args:
-          - "--all-features"
-          - "--features json"
-          - "--no-default-features"
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-targets ${{ matrix.args }}
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
 
   clippy:
+    name: clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,71 +39,75 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --all-targets --all-features -- -D warnings
 
+  test:
+    name: test (${{ matrix.features }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        features: ["--no-default-features", "--features json", "--all-features"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --all-targets ${{ matrix.features }}
+      - run: cargo test --doc ${{ matrix.features }}
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --no-deps --all-features
+
   no_std:
+    name: no_std (thumbv7em)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: thumbv7em-none-eabihf
+      - uses: Swatinem/rust-cache@v2
       - run: cargo build --target thumbv7em-none-eabihf --no-default-features
 
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install cargo-audit
-      - run: cargo audit
-
-  vectors:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          EXPECTED="29a8bf9f2b4dabe5d9641a8a4c416f361c2ba9815cca9b8e9e1d222d002fa50a"
-          ACTUAL=$(sha256sum tests/vectors/consent-interop-vectors-v0.1.0.json | awk '{print $1}')
-          test "$EXPECTED" = "$ACTUAL"
-
-  fuzz-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo install cargo-fuzz
-      - run: cargo fuzz build
-
-  release:
-    runs-on: ubuntu-latest
-    needs: [test, clippy, security]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --release --all-features
-      - run: find target/release -type f -exec sha256sum {} \; > checksums.txt
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts
-          path: |
-            target/release/
-            checksums.txt
-
-  
-
   wasm:
+    name: wasm32
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
       - run: cargo build --target wasm32-unknown-unknown --no-default-features
 
-  docs:
+  vectors:
+    name: frozen vectors
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo doc --no-deps --all-features
+      - run: cd tests/vectors && sha256sum -c SHA256SUMS
 
-  
+  fuzz-build:
+    name: fuzz build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-fuzz --locked
+      - run: cargo fuzz build
+
+  security:
+    name: cargo-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-audit --locked
+      - run: cargo audit

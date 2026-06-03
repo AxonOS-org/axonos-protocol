@@ -7,7 +7,7 @@
 #### Reference implementation · `no_std` · zero-alloc · `#![forbid(unsafe_code)]`
 
 [![CI](https://github.com/AxonOS-org/axonos-protocol/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AxonOS-org/axonos-protocol/actions/workflows/ci.yml)
-[![Crate](https://img.shields.io/badge/crate-v0.3.0-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-protocol/releases)
+[![Crate](https://img.shields.io/badge/crate-v0.4.0-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-protocol/releases)
 [![Spec](https://img.shields.io/badge/ACP-rev%200.3-0a4a8f?style=flat-square)](SPEC.md)
 [![Standard](https://img.shields.io/badge/Standard-v1.0.0-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-standard)
 [![Rust](https://img.shields.io/badge/Rust-no__std-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)

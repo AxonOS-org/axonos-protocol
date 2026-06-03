@@ -13,7 +13,6 @@ use axonos_protocol::frames::*;
 use axonos_protocol::invariants;
 use axonos_protocol::reason::ReasonCode;
 use axonos_protocol::state::{ConsentState, TransitionError};
-use axonos_protocol::*;
 
 fn rt(f: &ConsentFrame) {
     let mut buf = [0u8; cbor::MAX_ENCODED_SIZE];

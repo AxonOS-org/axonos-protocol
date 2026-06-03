@@ -4,7 +4,7 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! CBOR codec — security-bounded, zero-alloc. MMP §7 wire format.
+//! CBOR codec — security-bounded, zero-alloc. SPEC §7 wire format.
 //!
 //! ## Supported CBOR major types (RFC 8949)
 //!

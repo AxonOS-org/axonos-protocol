@@ -4,7 +4,7 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! Consent state machine per MMP Consent Extension v0.1.0, §4.
+//! Consent state machine per the AxonOS Consent Protocol, §4.
 //!
 //! ## State × Frame transition table (exhaustive)
 //!

@@ -4,7 +4,7 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! Formal invariants per MMP Consent Extension v0.1.0, §10 Conformance.
+//! Formal invariants per the AxonOS Consent Protocol, §10 Conformance.
 //!
 //! Each invariant corresponds to a spec requirement with RFC 2119 keywords:
 //! - MUST: violation = `InvariantViolation` (hard reject)

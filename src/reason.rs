@@ -4,7 +4,7 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! Reason code registry per MMP Consent Extension v0.1.0, Section 3.4.
+//! Reason code registry per the AxonOS Consent Protocol, Section 3.4.
 //! 0x00–0x0F: spec-reserved. 0x10–0xFF: implementation-specific.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

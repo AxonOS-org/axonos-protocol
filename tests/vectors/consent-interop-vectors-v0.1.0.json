@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "MMP Consent Extension v0.1.0 — Interop Test Vectors",
-    "spec": "https://sym.bot/spec/mmp-consent",
+    "description": "the AxonOS Consent Protocol — Interop Test Vectors",
+    "spec": "SPEC.md",
     "producer": "axonos-consent v0.1.0 (Rust, #![no_std])",
     "consumer": "sym (Node.js) / sym-swift (iOS/macOS)",
     "author": "Denis Yermakou <axonosorg@gmail.com>",
@@ -9,7 +9,7 @@
     "notes": [
       "Each test case contains a canonical JSON frame (what the relay sees)",
       "and the expected ConsentEngine state transitions.",
-      "Frame types are string identifiers per MMP Section 7.",
+      "Frame types are string identifiers per the AxonOS Consent Protocol (SPEC §7.)",
       "Hongwei: feed the 'json' field to your Node.js frame parser.",
       "If it doesn't throw, the interop surface is correct."
     ]

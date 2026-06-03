@@ -2,13 +2,13 @@
 
 # axonos-protocol
 
-### The AxonOS protocol layer — consent that travels across the cognitive mesh.
+### The AxonOS Consent Protocol — consent that travels across the cognitive mesh.
 
-#### Reference implementation of the **MMP Consent Extension** · `no_std` · zero-alloc · `#![forbid(unsafe_code)]`
+#### Reference implementation · `no_std` · zero-alloc · `#![forbid(unsafe_code)]`
 
 [![CI](https://github.com/AxonOS-org/axonos-protocol/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AxonOS-org/axonos-protocol/actions/workflows/ci.yml)
-[![Crate](https://img.shields.io/badge/crate-v0.2.2-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-protocol/releases)
-[![MMP](https://img.shields.io/badge/MMP-v0.2.2-0a4a8f?style=flat-square)](https://sym.bot/spec/mmp-consent)
+[![Crate](https://img.shields.io/badge/crate-v0.3.0-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-protocol/releases)
+[![Spec](https://img.shields.io/badge/ACP-rev%200.3-0a4a8f?style=flat-square)](SPEC.md)
 [![Standard](https://img.shields.io/badge/Standard-v1.0.0-0a4a8f?style=flat-square)](https://github.com/AxonOS-org/axonos-standard)
 [![Rust](https://img.shields.io/badge/Rust-no__std-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-475569?style=flat-square)](#license)
@@ -17,21 +17,31 @@
 
 ---
 
-`axonos-protocol` is the **wire-level consent layer** of AxonOS: the reference implementation of the **MMP Consent Extension v0.1.0** ([sym.bot/spec/mmp-consent](https://sym.bot/spec/mmp-consent)), co-developed with SYM.BOT and aligned with **MMP v0.2.2** (§16.4). It carries a person's consent — *grant, suspend, withdraw* — across a cognitive mesh as bounded CBOR frames, enforces it with an exhaustive state machine, and drives a hardware **StimGuard** the instant consent is withdrawn. The default build is `no_std`, allocates nothing, and forbids `unsafe` at compile time.
+`axonos-protocol` is the **wire-level consent layer** of AxonOS — the reference
+implementation of the **AxonOS Consent Protocol (ACP)**, specified in [`SPEC.md`](SPEC.md).
+It carries a person's consent — *grant, suspend, withdraw* — across the AxonOS cognitive
+mesh as bounded CBOR frames, enforces it with an exhaustive state machine, and engages a
+hardware **StimGuard** the instant consent is withdrawn. The default build is `no_std`,
+allocates nothing, and forbids `unsafe` at compile time.
 
-Where [`axonos-consent`](https://github.com/AxonOS-org/axonos-consent) is the **kernel-level** consent primitive — an in-process finite-state machine with formally-bounded withdrawal latency — `axonos-protocol` is the **network-level** layer that makes that consent interoperable between independent nodes on the wire.
+ACP is an AxonOS protocol end to end: the specification and this implementation are
+developed and maintained entirely within the AxonOS project. Where
+[`axonos-consent`](https://github.com/AxonOS-org/axonos-consent) is the **kernel-level**
+consent primitive — an in-process FSM with formally-bounded withdrawal latency —
+`axonos-protocol` is the **network-level** layer that makes that consent interoperable
+between independent nodes on the wire.
 
-> **Frozen vectors.** Any change to `tests/vectors/consent-interop-vectors-v0.1.0.json` invalidates the conformance suite — the vectors are the contract, not a fixture.
+> **Frozen vectors.** Any change to the files under `tests/vectors/` changes the protocol —
+> the vectors are the contract, not a fixture.
 
 ## Within AxonOS
-
-This crate is one organ of the [AxonOS](https://github.com/AxonOS-org) system; it is meant to be read alongside its siblings.
 
 | Repository | Role |
 |:--|:--|
 | [`axonos-kernel`](https://github.com/AxonOS-org/axonos-kernel) | The real-time `no_std` kernel — scheduler, SPSC, time, capability |
 | [`axonos-consent`](https://github.com/AxonOS-org/axonos-consent) | **Kernel-level** consent FSM, formally-bounded withdrawal latency |
-| **`axonos-protocol`** *(this crate)* | **Network-level** consent — the MMP Consent Extension, on the wire |
+| **`axonos-protocol`** *(this crate)* | **Network-level** consent — the AxonOS Consent Protocol, on the wire |
+| [`axonos-swarm`](https://github.com/AxonOS-org/axonos-swarm) | The cognitive mesh transport ACP travels over |
 | [`axonos-conformance`](https://github.com/AxonOS-org/axonos-conformance) | Byte-exact wire-format vectors + codecs in seven languages |
 | [`axonos-standard`](https://github.com/AxonOS-org/axonos-standard) | The normative AxonOS Standard and claims catalogue |
 
@@ -41,7 +51,7 @@ This crate is one organ of the [AxonOS](https://github.com/AxonOS-org) system; i
 let result = engine.process_raw(&peer_id, cbor_bytes, now_us)?;
 ```
 
-A single entry point. It executes the full pipeline:
+A single entry point. It executes the full pipeline (SPEC §5.1):
 
 ```text
 process_raw → CBOR decode (bounded) → invariant check (MUST/SHOULD) → state transition (3×3) → StimGuard
@@ -49,7 +59,7 @@ process_raw → CBOR decode (bounded) → invariant check (MUST/SHOULD) → stat
 
 ---
 
-## State machine
+## State machine — SPEC §4
 
 ![GRANTED](https://img.shields.io/badge/GRANTED-●-brightgreen) ![SUSPENDED](https://img.shields.io/badge/SUSPENDED-●-yellow) ![WITHDRAWN](https://img.shields.io/badge/WITHDRAWN-●-red)
 
@@ -72,7 +82,8 @@ process_raw → CBOR decode (bounded) → invariant check (MUST/SHOULD) → stat
 | **SUSPENDED** | → WITHDRAWN | → SUSPENDED *(idempotent)* | → GRANTED |
 | **WITHDRAWN** | ![reject](https://img.shields.io/badge/-REJECT-red) | ![reject](https://img.shields.io/badge/-REJECT-red) | ![reject](https://img.shields.io/badge/-REJECT-red) |
 
-`apply_frame()` is an exhaustive 3×3 match with zero wildcards. A new state variant is a compile error, not a silent fall-through.
+`apply_frame()` is an exhaustive 3×3 match with zero wildcards. A new state variant is a
+compile error, not a silent fall-through.
 
 ---
 
@@ -90,7 +101,7 @@ process_raw → CBOR decode (bounded) → invariant check (MUST/SHOULD) → stat
 
 ---
 
-## Threat model
+## Security bounds — SPEC §9
 
 | Threat | Mitigation | Bound |
 |---|---|---|
@@ -102,44 +113,40 @@ process_raw → CBOR decode (bounded) → invariant check (MUST/SHOULD) → stat
 | Buffer overflow | `Err(BufferTooSmall)` | 256 B |
 | State violation | `apply_frame()` reject | Compiler |
 
-## Error taxonomy
+## Error taxonomy — SPEC §10
 
 ```text
 L1 (Wire)    → Error::Decode     — malformed CBOR, bounds, unsupported types
-L2 (Struct)  → Error::Invariant  — MUST violations (§10)
+L2 (Struct)  → Error::Invariant  — MUST violations
 L3 (State)   → Error::Transition — WITHDRAWN→any, peer not found
 L4 (System)  → Error::Encode     — buffer too small
 ```
 
 ---
 
-## MMP v0.2.2 alignment
+## Specification mapping
 
-| MMP § | Reference |
-|---|---|
-| §3.5 | `consent-withdraw` triggers CONNECTED → DISCONNECTED |
-| §7 | Forward compatibility: unknown frame types silently ignored |
-| §7.2 | Error code `2002 CONSENT_WITHDRAWN` |
-| §16 | Extension mechanism: `consent-v0.1.0` advertised in handshake |
-| §16.4 | Published extension: [sym.bot/spec/mmp-consent](https://sym.bot/spec/mmp-consent) |
+Every module maps to a section of [`SPEC.md`](SPEC.md); the spec and the implementation
+are a single contract.
 
-## Consent spec mapping
-
-| § | Module | Enforcement |
+| SPEC § | Module | Enforcement |
 |---|---|---|
-| §3 | `frames` | Type-safe enum |
+| §3 | `frames` | Type-safe frame enum |
 | §3.1 | `ConsentWithdraw` | `scope` non-optional |
-| §3.4 | `reason` | 0x00–0x0F spec / 0x10–0xFF impl |
+| §3.4 | `reason` | Reason-code registry (0x00–0x0F spec / 0x10–0xFF AxonOS) |
 | §4 | `state::apply_frame` | Exhaustive 3×3 |
 | §5.1 | `engine::process_raw` | Single entry point |
-| §6.1 | `allows_cognitive_frames` | `false` for SUSPENDED / WITHDRAWN |
-| §6.4 | `state::to_gossip_bits` | 2-bit gossip encoding |
+| §6.1 | `engine::allows_cognitive_frames` | `false` for SUSPENDED / WITHDRAWN |
+| §6.4 | `state::to_gossip_bits` | 2-bit state propagation |
+| §7 | `codec::cbor` / `codec::json` | CBOR wire format, forward-compatible |
+| §7.2 | `Error` | Status `2002 CONSENT_WITHDRAWN` |
 | §8 | `stim_guard` | `DacGate`, < 1 µs |
 | §10 | `invariants` | MUST → violation, SHOULD → warning |
+| §11 | `engine` (peer) | `consent-withdraw` → peer DISCONNECTED on the mesh |
 
 ---
 
-## Reason codes
+## Reason codes — SPEC §3.4
 
 | Code | Name | Range |
 |---|---|---|
@@ -152,7 +159,7 @@ L4 (System)  → Error::Encode     — buffer too small
 | `0x12` | EMERGENCY_BUTTON | AxonOS |
 | `0x13` | SWARM_FAULT_DETECTED | AxonOS |
 
-Codes `0x00–0x0F` are reserved by the specification; `0x10–0xFF` are AxonOS implementation extensions.
+Codes `0x00–0x0F` are reserved by the specification; `0x10–0xFF` are AxonOS extensions.
 
 ---
 
@@ -167,13 +174,13 @@ src/
 ├── reason.rs        # ReasonCode registry (§3.4)
 ├── invariants.rs    # MUST/SHOULD/MAY (§10), check_transition
 ├── error.rs         # Layered error taxonomy (L1–L4)
-├── stim_guard.rs    # DacGate trait, timing contract
+├── stim_guard.rs    # DacGate trait, timing contract (§8)
 └── codec/
-    ├── cbor.rs      # Bounded encoder/decoder, security-hardened
+    ├── cbor.rs      # Bounded encoder/decoder, security-hardened (§7, §9)
     └── json.rs      # JSON codec (feature-gated: alloc + std)
 tests/
 ├── consent_interop.rs    # 60+ tests
-└── vectors/              # 15 canonical interop vectors (frozen)
+└── vectors/              # canonical interop vectors (frozen)
 fuzz/
 └── fuzz_targets/         # cargo-fuzz: decode + roundtrip
 ```
@@ -184,7 +191,7 @@ fuzz/
 
 ```bash
 cargo test                  # no_std: CBOR, state machine, engine, invariants
-cargo test --features json  # + JSON round-trip (15 vectors)
+cargo test --features json  # + JSON round-trip vectors
 cargo +nightly fuzz run fuzz_cbor_decode
 cargo +nightly fuzz run fuzz_cbor_roundtrip
 ```
@@ -198,7 +205,9 @@ Licensed under either of
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
 - MIT License ([LICENSE-MIT](LICENSE-MIT))
 
-at your option. Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual-licensed as above, without any additional terms or conditions.
+at your option. Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall
+be dual-licensed as above, without any additional terms or conditions.
 
 ---
 

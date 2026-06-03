@@ -4,9 +4,9 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! Consent frame types per MMP Consent Extension v0.1.0, Section 3.
+//! Consent frame types per the AxonOS Consent Protocol, Section 3.
 //!
-//! Frame types use string identifiers per MMP Section 7:
+//! Frame types use string identifiers per the AxonOS Consent Protocol (SPEC §7):
 //! `"consent-withdraw"`, `"consent-suspend"`, `"consent-resume"`
 //!
 //! ## Zero-allocation design
@@ -134,7 +134,7 @@ pub enum ConsentFrame {
 }
 
 impl ConsentFrame {
-    /// MMP frame type string identifier (Section 7).
+    /// AxonOS Consent Protocol frame type string identifier (Section 7).
     pub fn type_str(&self) -> &'static str {
         match self {
             ConsentFrame::Withdraw(_) => "consent-withdraw",

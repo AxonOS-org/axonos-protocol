@@ -29,7 +29,7 @@ use crate::state::{ConsentState, TransitionError};
 /// Maximum peers. BLE mesh constraint. §6.4.
 pub const MAX_PEERS: usize = 8;
 
-/// Opaque peer identifier (MMP nodeId, UUID v4).
+/// Opaque peer identifier (AxonOS mesh node id, UUID v4).
 pub type PeerId = [u8; 16];
 
 #[derive(Debug, Clone)]

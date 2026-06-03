@@ -1,16 +1,18 @@
 // Copyright (c) 2026 Denis Yermakou / AxonOS
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// This file is part of the AxonOS protocol layer.
+// Part of the AxonOS Consent Protocol (ACP) reference implementation.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
 //! # axonos-protocol
 //!
-//! MMP Consent Extension v0.1.0 — reference implementation.
-//! Aligned with MMP v0.2.2 (Section 16.4).
+//! Reference implementation of the **AxonOS Consent Protocol (ACP)**.
+//! Specification: `SPEC.md` (revision 0.3).
+//! On-wire protocol version: `CONSENT_PROTOCOL_VERSION = 1`.
 //!
-//! Spec: <https://sym.bot/spec/mmp-consent>
-//! Protocol version: `CONSENT_PROTOCOL_VERSION = 1`
+//! ACP carries a person's consent — grant, suspend, withdraw — across the AxonOS
+//! cognitive mesh, enforces it with an exhaustive state machine, and engages a
+//! hardware StimGuard on withdrawal. `no_std`, zero-alloc, `forbid(unsafe)`.
 //!
 //! ## Single entry point
 //!
@@ -23,28 +25,27 @@
 //! // Full pipeline: engine.process_raw(&peer_id, &cbor_bytes, now_us)
 //! ```
 //!
-//! This is the **only** function external code should call. It executes:
-//! 1. CBOR decode (bounded, security-hardened)
-//! 2. Invariant check (MUST violations → reject, SHOULD → warn)
-//! 3. State transition (exhaustive 3×3 table, no wildcards)
-//! 4. StimGuard callback (if withdrawal + feature enabled)
+//! This is the **only** function external code should call. It executes (SPEC §5.1):
+//! 1. CBOR decode (bounded, security-hardened) — SPEC §7, §9
+//! 2. Invariant check (MUST → reject, SHOULD → warn) — SPEC §10
+//! 3. State transition (exhaustive 3×3, no wildcards) — SPEC §4
+//! 4. StimGuard callback (on withdrawal, if feature enabled) — SPEC §8
 //!
-//! ## Spec-to-code mapping
+//! ## Specification mapping
 //!
-//! | Spec § | Module | Purpose |
+//! | SPEC § | Module | Purpose |
 //! |--------|--------|---------|
-//! | Consent §3   | `frames` | ConsentWithdraw/Suspend/Resume |
-//! | Consent §3.4 | `reason` | ReasonCode registry |
-//! | Consent §4   | `state`  | ConsentState + `apply_frame()` (exhaustive) |
-//! | Consent §5.1 | `engine` | ConsentEngine + `process_raw()` |
-//! | Consent §6.1 | `engine::allows_cognitive_frames` | Frame gating |
-//! | Consent §6.4 | `state::to_gossip_bits` | 2-bit encoding |
-//! | Consent §8   | `stim_guard` | DAC gate + timing contract |
-//! | Consent §10  | `invariants` | MUST/SHOULD/MAY enforcement |
-//! | MMP §7       | `codec::cbor` / `codec::json` | Frame registry (Section 7 forward compat) |
-//! | MMP §7.2     | Error code 2002 CONSENT_WITHDRAWN |
-//! | MMP §3.5     | Connection state machine: consent-withdraw triggers DISCONNECTED |
-//! | MMP §16.4    | Published extension: `consent-v0.1.0` |
+//! | §3   | `frames` | ConsentWithdraw / Suspend / Resume |
+//! | §3.4 | `reason` | ReasonCode registry |
+//! | §4   | `state`  | ConsentState + `apply_frame()` (exhaustive) |
+//! | §5.1 | `engine` | ConsentEngine + `process_raw()` |
+//! | §6.1 | `engine::allows_cognitive_frames` | Frame gating |
+//! | §6.4 | `state::to_gossip_bits` | 2-bit state propagation |
+//! | §7   | `codec::cbor` / `codec::json` | CBOR wire format (forward-compatible) |
+//! | §7.2 | Status code `2002 CONSENT_WITHDRAWN` |
+//! | §8   | `stim_guard` | DAC gate + timing contract |
+//! | §10  | `invariants` | MUST / SHOULD / MAY enforcement |
+//! | §11  | `engine` | consent-withdraw → peer DISCONNECTED on the mesh |
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![forbid(unsafe_code)]
@@ -52,7 +53,7 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-/// Protocol version. Wire-encoded in future handshake extensions.
+/// On-wire protocol version. See SPEC §12.
 pub const CONSENT_PROTOCOL_VERSION: u8 = 1;
 
 pub mod codec;

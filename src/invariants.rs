@@ -61,8 +61,10 @@ pub struct InvariantResult {
 impl InvariantResult {
     const fn empty() -> Self {
         Self {
-            violations: [None; 4], violation_count: 0,
-            warnings: [None; 4], warning_count: 0,
+            violations: [None; 4],
+            violation_count: 0,
+            warnings: [None; 4],
+            warning_count: 0,
         }
     }
 
@@ -81,10 +83,14 @@ impl InvariantResult {
     }
 
     /// True if no MUST violations. Warnings are acceptable.
-    pub fn is_valid(&self) -> bool { self.violation_count == 0 }
+    pub fn is_valid(&self) -> bool {
+        self.violation_count == 0
+    }
 
     /// True if there are SHOULD warnings.
-    pub fn has_warnings(&self) -> bool { self.warning_count > 0 }
+    pub fn has_warnings(&self) -> bool {
+        self.warning_count > 0
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -185,6 +191,7 @@ pub fn check_transition(
     current: ConsentState,
     frame: &ConsentFrame,
 ) -> Result<ConsentState, InvariantViolation> {
-    current.apply_frame(frame)
+    current
+        .apply_frame(frame)
         .map_err(|_| InvariantViolation::TransitionFromWithdrawn)
 }

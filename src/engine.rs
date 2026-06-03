@@ -20,11 +20,11 @@
 //! Direct `suspend()/resume()/withdraw()` methods exist for internal use
 //! (e.g., emergency button bypass) but skip frame-level validation.
 
-use crate::state::{ConsentState, TransitionError};
-use crate::reason::ReasonCode;
+use crate::error::Error;
 use crate::frames::ConsentFrame;
 use crate::invariants;
-use crate::error::Error;
+use crate::reason::ReasonCode;
+use crate::state::{ConsentState, TransitionError};
 
 /// Maximum peers. BLE mesh constraint. §6.4.
 pub const MAX_PEERS: usize = 8;
@@ -122,8 +122,7 @@ impl ConsentEngine {
         now_us: u64,
     ) -> Result<ProcessResult, Error> {
         // Step 0: Decode CBOR
-        let frame = crate::codec::cbor::decode(cbor_data)
-            .map_err(Error::Decode)?;
+        let frame = crate::codec::cbor::decode(cbor_data).map_err(Error::Decode)?;
 
         // Extract reason_code from frame (if present)
         let reason = match &frame {
@@ -157,16 +156,16 @@ impl ConsentEngine {
         if !inv.is_valid() {
             // Return first violation
             return Err(Error::Invariant(
-                inv.violations[0].unwrap() // safe: violation_count > 0
+                inv.violations[0].unwrap(), // safe: violation_count > 0
             ));
         }
 
         // Step 2: Find peer + check transition legality
-        let peer = self.find_peer_mut(peer_id)
+        let peer = self
+            .find_peer_mut(peer_id)
             .ok_or(Error::Transition(TransitionError::PeerNotFound))?;
 
-        let new_state = peer.state.apply_frame(frame)
-            .map_err(Error::Transition)?;
+        let new_state = peer.state.apply_frame(frame).map_err(Error::Transition)?;
 
         // Step 3: Apply transition
         peer.state = new_state;
@@ -176,7 +175,9 @@ impl ConsentEngine {
         // Step 4: StimGuard callback on withdrawal
         if new_state == ConsentState::Withdrawn {
             #[cfg(feature = "stim-guard")]
-            if let Some(cb) = self.on_withdraw { cb(peer_id); }
+            if let Some(cb) = self.on_withdraw {
+                cb(peer_id);
+            }
         }
 
         Ok(ProcessResult {
@@ -188,10 +189,15 @@ impl ConsentEngine {
 
     // --- Direct methods (bypass frame validation, for internal/emergency use) ---
 
-    pub fn suspend(&mut self, peer_id: &PeerId, reason: Option<ReasonCode>, now_us: u64)
-        -> Result<ConsentState, TransitionError>
-    {
-        let peer = self.find_peer_mut(peer_id).ok_or(TransitionError::PeerNotFound)?;
+    pub fn suspend(
+        &mut self,
+        peer_id: &PeerId,
+        reason: Option<ReasonCode>,
+        now_us: u64,
+    ) -> Result<ConsentState, TransitionError> {
+        let peer = self
+            .find_peer_mut(peer_id)
+            .ok_or(TransitionError::PeerNotFound)?;
         let s = peer.state.suspend()?;
         peer.state = s;
         peer.last_reason = reason;
@@ -199,10 +205,14 @@ impl ConsentEngine {
         Ok(s)
     }
 
-    pub fn resume(&mut self, peer_id: &PeerId, now_us: u64)
-        -> Result<ConsentState, TransitionError>
-    {
-        let peer = self.find_peer_mut(peer_id).ok_or(TransitionError::PeerNotFound)?;
+    pub fn resume(
+        &mut self,
+        peer_id: &PeerId,
+        now_us: u64,
+    ) -> Result<ConsentState, TransitionError> {
+        let peer = self
+            .find_peer_mut(peer_id)
+            .ok_or(TransitionError::PeerNotFound)?;
         let s = peer.state.resume()?;
         peer.state = s;
         peer.last_transition_us = now_us;
@@ -213,16 +223,23 @@ impl ConsentEngine {
     /// §8: physical button → direct interrupt → this function.
     ///
     /// WCET: state write + optional StimGuard callback. <1µs on M4F.
-    pub fn withdraw(&mut self, peer_id: &PeerId, reason: Option<ReasonCode>, now_us: u64)
-        -> Result<ConsentState, TransitionError>
-    {
-        let peer = self.find_peer_mut(peer_id).ok_or(TransitionError::PeerNotFound)?;
+    pub fn withdraw(
+        &mut self,
+        peer_id: &PeerId,
+        reason: Option<ReasonCode>,
+        now_us: u64,
+    ) -> Result<ConsentState, TransitionError> {
+        let peer = self
+            .find_peer_mut(peer_id)
+            .ok_or(TransitionError::PeerNotFound)?;
         let s = peer.state.withdraw()?;
         peer.state = s;
         peer.last_reason = reason;
         peer.last_transition_us = now_us;
         #[cfg(feature = "stim-guard")]
-        if let Some(cb) = self.on_withdraw { cb(peer_id); }
+        if let Some(cb) = self.on_withdraw {
+            cb(peer_id);
+        }
         Ok(s)
     }
 
@@ -240,7 +257,9 @@ impl ConsentEngine {
                     result.withdrawn_peers[result.count] = Some(peer.peer_id);
                 }
                 #[cfg(feature = "stim-guard")]
-                if let Some(cb) = self.on_withdraw { cb(&peer.peer_id); }
+                if let Some(cb) = self.on_withdraw {
+                    cb(&peer.peer_id);
+                }
                 result.count += 1;
             }
         }
@@ -249,13 +268,21 @@ impl ConsentEngine {
 
     /// §6.1: check if cognitive frames should be processed for this peer.
     pub fn allows_cognitive_frames(&self, peer_id: &PeerId) -> bool {
-        self.find_peer(peer_id).map(|p| p.state.allows_cognitive_frames()).unwrap_or(false)
+        self.find_peer(peer_id)
+            .map(|p| p.state.allows_cognitive_frames())
+            .unwrap_or(false)
     }
 
     fn find_peer(&self, id: &PeerId) -> Option<&PeerConsent> {
-        self.peers.iter().filter_map(|s| s.as_ref()).find(|p| &p.peer_id == id)
+        self.peers
+            .iter()
+            .filter_map(|s| s.as_ref())
+            .find(|p| &p.peer_id == id)
     }
     fn find_peer_mut(&mut self, id: &PeerId) -> Option<&mut PeerConsent> {
-        self.peers.iter_mut().filter_map(|s| s.as_mut()).find(|p| &p.peer_id == id)
+        self.peers
+            .iter_mut()
+            .filter_map(|s| s.as_mut())
+            .find(|p| &p.peer_id == id)
     }
 }

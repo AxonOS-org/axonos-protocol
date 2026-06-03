@@ -339,11 +339,21 @@ impl<'a> Writer<'a> {
     }
     fn type_val(&mut self, major: u8, v: u64) -> Result<(), EncodeError> {
         let mt = major << 5;
-        if v < 24 { self.put(mt | v as u8) }
-        else if v <= 0xFF { self.put(mt | 24)?; self.put(v as u8) }
-        else if v <= 0xFFFF { self.put(mt | 25)?; self.put_slice(&(v as u16).to_be_bytes()) }
-        else if v <= 0xFFFF_FFFF { self.put(mt | 26)?; self.put_slice(&(v as u32).to_be_bytes()) }
-        else { self.put(mt | 27)?; self.put_slice(&v.to_be_bytes()) }
+        if v < 24 {
+            self.put(mt | v as u8)
+        } else if v <= 0xFF {
+            self.put(mt | 24)?;
+            self.put(v as u8)
+        } else if v <= 0xFFFF {
+            self.put(mt | 25)?;
+            self.put_slice(&(v as u16).to_be_bytes())
+        } else if v <= 0xFFFF_FFFF {
+            self.put(mt | 26)?;
+            self.put_slice(&(v as u32).to_be_bytes())
+        } else {
+            self.put(mt | 27)?;
+            self.put_slice(&v.to_be_bytes())
+        }
     }
     fn map(&mut self, n: u64) -> Result<(), EncodeError> {
         self.type_val(5, n)
@@ -364,7 +374,10 @@ struct Cursor<'a> {
 
 impl<'a> Cursor<'a> {
     fn byte(&mut self) -> Result<u8, DecodeError> {
-        let b = self.data.get(self.pos).copied()
+        let b = self
+            .data
+            .get(self.pos)
+            .copied()
             .ok_or(DecodeError::UnexpectedEof)?;
         self.pos += 1;
         Ok(b)
@@ -381,7 +394,10 @@ impl<'a> Cursor<'a> {
         match ai {
             0..=23 => Ok(ai as u64),
             24 => Ok(self.byte()? as u64),
-            25 => { let b = self.advance(2)?; Ok(u16::from_be_bytes([b[0], b[1]]) as u64) }
+            25 => {
+                let b = self.advance(2)?;
+                Ok(u16::from_be_bytes([b[0], b[1]]) as u64)
+            }
             26 => {
                 let b = self.advance(4)?;
                 Ok(u32::from_be_bytes([b[0], b[1], b[2], b[3]]) as u64)
@@ -389,8 +405,7 @@ impl<'a> Cursor<'a> {
             27 => {
                 let b = self.advance(8)?;
                 Ok(u64::from_be_bytes([
-                    b[0], b[1], b[2], b[3],
-                    b[4], b[5], b[6], b[7],
+                    b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7],
                 ]))
             }
             _ => Err(DecodeError::InvalidCbor),
@@ -438,13 +453,15 @@ impl<'a> Cursor<'a> {
         let arg = self.argument(ib & 0x1F)?;
         match major {
             0 => {} // unsigned int — consumed
-            3 => { // text string
+            3 => {
+                // text string
                 if arg as usize > MAX_STRING_LEN {
                     return Err(DecodeError::StringTooLong);
                 }
                 self.advance(arg as usize)?;
             }
-            5 => { // map
+            5 => {
+                // map
                 if arg > MAX_MAP_FIELDS {
                     return Err(DecodeError::MapTooLarge);
                 }

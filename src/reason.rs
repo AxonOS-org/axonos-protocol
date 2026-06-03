@@ -23,13 +23,23 @@ pub enum ReasonCode {
 impl ReasonCode {
     pub fn from_u8(v: u8) -> Self {
         match v {
-            0x01 => Self::UserInitiated, 0x02 => Self::SafetyViolation,
-            0x03 => Self::HardwareFault, 0x10 => Self::StimGuardLockout,
-            0x11 => Self::SessionAttestationFailure, 0x12 => Self::EmergencyButton,
-            0x13 => Self::SwarmFaultDetected, _ => Self::Unspecified,
+            0x01 => Self::UserInitiated,
+            0x02 => Self::SafetyViolation,
+            0x03 => Self::HardwareFault,
+            0x10 => Self::StimGuardLockout,
+            0x11 => Self::SessionAttestationFailure,
+            0x12 => Self::EmergencyButton,
+            0x13 => Self::SwarmFaultDetected,
+            _ => Self::Unspecified,
         }
     }
-    pub fn to_u8(self) -> u8 { self as u8 }
-    pub fn is_spec_reserved(self) -> bool { (self as u8) <= 0x0F }
-    pub fn is_implementation_specific(self) -> bool { (self as u8) >= 0x10 }
+    pub fn to_u8(self) -> u8 {
+        self as u8
+    }
+    pub fn is_spec_reserved(self) -> bool {
+        (self as u8) <= 0x0F
+    }
+    pub fn is_implementation_specific(self) -> bool {
+        (self as u8) >= 0x10
+    }
 }

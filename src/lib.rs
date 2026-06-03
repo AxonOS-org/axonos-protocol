@@ -1,10 +1,10 @@
 // Copyright (c) 2026 Denis Yermakou / AxonOS
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// This file is part of the AxonOS Consent Engine.
+// This file is part of the AxonOS protocol layer.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! # axonos-consent
+//! # axonos-protocol
 //!
 //! MMP Consent Extension v0.1.0 — reference implementation.
 //! Aligned with MMP v0.2.2 (Section 16.4).
@@ -15,7 +15,7 @@
 //! ## Single entry point
 //!
 //! ```rust,no_run
-//! use axonos_consent::ConsentEngine;
+//! use axonos_protocol::ConsentEngine;
 //!
 //! let mut engine = ConsentEngine::new();
 //! let peer_id = [0u8; 16];
@@ -55,19 +55,19 @@ extern crate alloc;
 /// Protocol version. Wire-encoded in future handshake extensions.
 pub const CONSENT_PROTOCOL_VERSION: u8 = 1;
 
-pub mod state;
-pub mod engine;
-pub mod frames;
-pub mod reason;
 pub mod codec;
-pub mod invariants;
+pub mod engine;
 pub mod error;
+pub mod frames;
+pub mod invariants;
+pub mod reason;
+pub mod state;
 
 #[cfg(feature = "stim-guard")]
 pub mod stim_guard;
 
-pub use state::ConsentState;
 pub use engine::ConsentEngine;
+pub use error::Error;
 pub use frames::{ConsentFrame, Scope};
 pub use reason::ReasonCode;
-pub use error::Error;
+pub use state::ConsentState;

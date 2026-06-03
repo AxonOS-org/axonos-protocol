@@ -1,12 +1,13 @@
 [package]
-name = "axonos-consent"
+name = "axonos-protocol"
 version = "0.2.2"
 edition = "2021"
-authors = ["Denis Yermakou <axonosorg@gmail.com>"]
-description = "MMP Consent Extension — reference implementation. Deterministic consent enforcement for BCI cognitive mesh coupling. Aligned with MMP v0.2.2."
+authors = ["Denis Yermakou <connect@axonos.org>"]
+description = "AxonOS protocol layer — the MMP Consent Extension reference implementation: bounded CBOR codec, exhaustive consent state machine, StimGuard. no_std, zero-alloc, forbid(unsafe). Aligned with MMP v0.2.2."
 license = "Apache-2.0 OR MIT"
-repository = "https://github.com/AxonOS-org/axonos-consent"
-keywords = ["bci", "consent", "mmp", "real-time", "no_std"]
+repository = "https://github.com/AxonOS-org/axonos-protocol"
+homepage = "https://axonos.org"
+keywords = ["bci", "consent", "mmp", "real-time", "no-std"]
 categories = ["embedded", "no-std"]
 readme = "README.md"
 

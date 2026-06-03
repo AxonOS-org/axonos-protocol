@@ -48,7 +48,12 @@ pub struct StimGuardConsent<G: DacGate> {
 }
 
 impl<G: DacGate> StimGuardConsent<G> {
-    pub fn new(gate: G) -> Self { Self { gate, lockout_active: false } }
+    pub fn new(gate: G) -> Self {
+        Self {
+            gate,
+            lockout_active: false,
+        }
+    }
 
     /// Called by ConsentEngine on withdrawal. Closes DAC gate.
     /// WCET: <0.1µs (single function call + register write).
@@ -58,7 +63,9 @@ impl<G: DacGate> StimGuardConsent<G> {
         self.lockout_active = true;
     }
 
-    pub fn is_locked_out(&self) -> bool { self.lockout_active }
+    pub fn is_locked_out(&self) -> bool {
+        self.lockout_active
+    }
 
     /// Re-enable stimulation. Requires power cycle + re-handshake.
     /// NOT callable during normal operation.

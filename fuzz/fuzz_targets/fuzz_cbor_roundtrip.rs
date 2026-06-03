@@ -12,7 +12,7 @@
 
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use axonos_consent::codec::cbor;
+use axonos_protocol::codec::cbor;
 
 fuzz_target!(|data: &[u8]| {
     if let Ok(frame) = cbor::decode(data) {

@@ -30,20 +30,30 @@ pub struct ReasonBuf {
 
 impl ReasonBuf {
     pub const fn empty() -> Self {
-        Self { buf: [0u8; MAX_REASON_LEN], len: 0 }
+        Self {
+            buf: [0u8; MAX_REASON_LEN],
+            len: 0,
+        }
     }
 
     /// Create from a string slice. Truncates if longer than MAX_REASON_LEN.
     pub fn new(s: &str) -> Self {
         let bytes = s.as_bytes();
-        let copy_len = if bytes.len() > MAX_REASON_LEN { MAX_REASON_LEN } else { bytes.len() };
+        let copy_len = if bytes.len() > MAX_REASON_LEN {
+            MAX_REASON_LEN
+        } else {
+            bytes.len()
+        };
         let mut buf = [0u8; MAX_REASON_LEN];
         let mut i = 0;
         while i < copy_len {
             buf[i] = bytes[i];
             i += 1;
         }
-        Self { buf, len: copy_len as u8 }
+        Self {
+            buf,
+            len: copy_len as u8,
+        }
     }
 
     pub fn as_str(&self) -> &str {
@@ -51,8 +61,12 @@ impl ReasonBuf {
         core::str::from_utf8(&self.buf[..self.len as usize]).unwrap_or("")
     }
 
-    pub fn len(&self) -> usize { self.len as usize }
-    pub fn is_empty(&self) -> bool { self.len == 0 }
+    pub fn len(&self) -> usize {
+        self.len as usize
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 
 impl core::fmt::Debug for ReasonBuf {
@@ -70,10 +84,17 @@ pub enum Scope {
 
 impl Scope {
     pub fn as_str(&self) -> &'static str {
-        match self { Scope::Peer => "peer", Scope::All => "all" }
+        match self {
+            Scope::Peer => "peer",
+            Scope::All => "all",
+        }
     }
     pub fn parse(s: &str) -> Option<Self> {
-        match s { "peer" => Some(Scope::Peer), "all" => Some(Scope::All), _ => None }
+        match s {
+            "peer" => Some(Scope::Peer),
+            "all" => Some(Scope::All),
+            _ => None,
+        }
     }
 }
 

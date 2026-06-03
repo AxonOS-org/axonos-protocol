@@ -48,14 +48,22 @@ pub enum Error {
 }
 
 impl From<DecodeError> for Error {
-    fn from(e: DecodeError) -> Self { Error::Decode(e) }
+    fn from(e: DecodeError) -> Self {
+        Error::Decode(e)
+    }
 }
 impl From<InvariantViolation> for Error {
-    fn from(e: InvariantViolation) -> Self { Error::Invariant(e) }
+    fn from(e: InvariantViolation) -> Self {
+        Error::Invariant(e)
+    }
 }
 impl From<TransitionError> for Error {
-    fn from(e: TransitionError) -> Self { Error::Transition(e) }
+    fn from(e: TransitionError) -> Self {
+        Error::Transition(e)
+    }
 }
 impl From<EncodeError> for Error {
-    fn from(e: EncodeError) -> Self { Error::Encode(e) }
+    fn from(e: EncodeError) -> Self {
+        Error::Encode(e)
+    }
 }

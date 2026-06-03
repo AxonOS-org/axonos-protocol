@@ -4,14 +4,14 @@
 // This file is part of the AxonOS Consent Engine.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
-//! Fuzz target: `axonos_consent::codec::cbor::decode()`
+//! Fuzz target: `axonos_protocol::codec::cbor::decode()`
 //!
 //! Goal: no panic, no OOB, no infinite loop on arbitrary input.
 //! Run: cargo +nightly fuzz run fuzz_cbor_decode
 
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use axonos_consent::codec::cbor;
+use axonos_protocol::codec::cbor;
 
 fuzz_target!(|data: &[u8]| {
     // Must never panic. Errors are expected and fine.

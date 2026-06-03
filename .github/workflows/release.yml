@@ -23,7 +23,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           awk "/^## \[$VERSION\]/{f=1;next} /^## \[/{if(f)exit} f" CHANGELOG.md > RELEASE_NOTES.md || true
           [ -s RELEASE_NOTES.md ] || echo "See CHANGELOG.md for details." > RELEASE_NOTES.md
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: RELEASE_NOTES.md
           generate_release_notes: true

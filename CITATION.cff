@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use AxonOS or the AxonOS Consent Protocol in your work, please cite it as below."
+title: "axonos-protocol: AxonOS Consent Protocol reference implementation"
+abstract: >-
+  A no_std, zero-allocation Rust reference implementation of the AxonOS Consent
+  Protocol (ACP): a security-bounded CBOR codec, an exhaustive consent state
+  machine, and a StimGuard hardware-gating contract for brain-computer interface
+  systems. Specification and implementation are developed entirely within the
+  AxonOS project.
+type: software
+authors:
+  - family-names: Yermakou
+    given-names: Denis
+    affiliation: "The AxonOS Project"
+version: "0.5.0"
+date-released: "2026-06-03"
+license: "Apache-2.0 OR MIT"
+repository-code: "https://github.com/AxonOS-org/axonos-protocol"
+url: "https://axonos.org"
+keywords:
+  - brain-computer interface
+  - neurotechnology
+  - consent
+  - real-time
+  - no_std
+  - Rust
+  - CBOR

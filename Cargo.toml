@@ -1,6 +1,6 @@
 [package]
 name = "axonos-protocol"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 authors = ["Denis Yermakou <connect@axonos.org>"]
 description = "The AxonOS Consent Protocol — reference implementation. no_std, zero-alloc, forbid(unsafe): bounded CBOR codec, exhaustive consent state machine, and StimGuard for brain–computer interfaces."

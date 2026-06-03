@@ -1,0 +1,67 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
+revision (`SPEC.md`) are versioned independently of the crate.
+
+## [0.5.0] - 2026-06-03
+
+### Changed
+- CI installs `cargo-fuzz` and `cargo-audit` as prebuilt binaries via
+  `taiki-e/install-action` instead of compiling them from source. This removes a
+  nightly build failure in which an old transitive dependency (`rustix 0.36.5`)
+  no longer compiles on current `rustc`, and makes CI faster and reproducible.
+
+### Added
+- `CHANGELOG.md` (this file).
+- `CITATION.cff` — machine-readable citation metadata; GitHub renders a
+  "Cite this repository" action from it.
+
+## [0.4.0] - 2026-06-03
+
+### Added
+- Reworked CI: `rustfmt --check`, `clippy -D warnings`, a full feature matrix with
+  doctests, `no_std` (thumbv7em) and `wasm32` builds, `cargo doc` with
+  `-D warnings`, a fuzz build, and `cargo audit`.
+- Frozen-vectors integrity guard via a committed `tests/vectors/SHA256SUMS`.
+
+### Fixed
+- Stale hard-coded conformance-vector checksum in CI (the 0.3.0 de-coupling change
+  altered the vectors' metadata and invalidated the previous hash).
+- Unused glob import in the integration tests that failed under `-D warnings`.
+
+### Removed
+- Helper shell scripts that had been committed to the repository.
+
+## [0.3.0] - 2026-06-03
+
+### Changed
+- The crate is now the reference implementation of the **AxonOS Consent Protocol
+  (ACP)**, specified in `SPEC.md`, developed and maintained entirely within the
+  AxonOS project.
+- Renamed the crate `axonos-consent` → `axonos-protocol`, resolving an identity
+  collision with the kernel-level consent crate.
+
+### Removed
+- All references to external protocols from the specification, implementation, and
+  conformance metadata. ACP is defined against AxonOS documents only.
+
+### Fixed
+- `LICENSE-APACHE` now contains the full Apache-2.0 text (previously a stub), and
+  the redundant top-level `LICENSE` was removed so the dual license resolves
+  correctly.
+
+## [0.2.2] - 2026-05-25
+
+### Added
+- Initial public release: a `no_std`, zero-allocation consent protocol engine —
+  security-bounded CBOR codec, exhaustive three-state consent machine, reason-code
+  registry, StimGuard contract, and frozen interop vectors.
+
+[0.5.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.5.0
+[0.4.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.4.0
+[0.3.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.3.0
+[0.2.2]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/V0.2.2

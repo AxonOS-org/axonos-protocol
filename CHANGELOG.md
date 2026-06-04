@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.8.0] - 2026-06-03
+
+### Added
+- `ReasonCode::as_str()` (const) and a `core::fmt::Display` implementation —
+  stable, lowercase, hyphenated identifiers for structured logging and diagnostics.
+- `ConsentState::as_str()` (const), `ConsentState::is_terminal()`, and `Display`.
+- `TransitionError::as_str()` (const), `Display`, and a `core::error::Error`
+  implementation (the no_std error trait, available since the 1.82 MSRV).
+- `SPEC_REVISION` constant alongside `CONSENT_PROTOCOL_VERSION`, exposing the
+  implemented specification revision programmatically.
+
+### Changed
+- Corrected stale module-header comments ("AxonOS Consent Engine" → "AxonOS
+  Consent Protocol (ACP) reference implementation") for organism consistency.
+
 ## [0.7.0] - 2026-06-03
 
 ### Fixed
@@ -99,6 +114,7 @@ revision (`SPEC.md`) are versioned independently of the crate.
   security-bounded CBOR codec, exhaustive three-state consent machine, reason-code
   registry, StimGuard contract, and frozen interop vectors.
 
+[0.8.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.8.0
 [0.7.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.5.0

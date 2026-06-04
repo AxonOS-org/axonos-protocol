@@ -56,6 +56,9 @@ extern crate alloc;
 /// On-wire protocol version. See SPEC §12.
 pub const CONSENT_PROTOCOL_VERSION: u8 = 1;
 
+/// Specification revision implemented by this crate. See `SPEC.md` and SPEC §12.
+pub const SPEC_REVISION: &str = "0.3";
+
 pub mod codec;
 pub mod engine;
 pub mod error;

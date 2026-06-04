@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Denis Yermakou / AxonOS
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// This file is part of the AxonOS Consent Engine.
+// This file is part of the AxonOS Consent Protocol (ACP) reference implementation.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
 //! Consent state machine per the AxonOS Consent Protocol, §4.
@@ -110,4 +110,50 @@ impl ConsentState {
     pub fn allows_cognitive_frames(self) -> bool {
         matches!(self, Self::Granted)
     }
+
+    /// Stable, lowercase identifier for this state (§4).
+    ///
+    /// # Examples
+    /// ```
+    /// use axonos_protocol::ConsentState;
+    /// assert_eq!(ConsentState::Withdrawn.as_str(), "withdrawn");
+    /// assert!(ConsentState::Withdrawn.is_terminal());
+    /// ```
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Granted => "granted",
+            Self::Suspended => "suspended",
+            Self::Withdrawn => "withdrawn",
+        }
+    }
+
+    /// `true` if this is the terminal WITHDRAWN state (§4).
+    pub const fn is_terminal(self) -> bool {
+        matches!(self, Self::Withdrawn)
+    }
 }
+
+impl core::fmt::Display for ConsentState {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl TransitionError {
+    /// Stable, human-readable description of this transition error.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::AlreadyWithdrawn => "consent already withdrawn (terminal state)",
+            Self::PeerNotFound => "peer not found in engine peer table",
+        }
+    }
+}
+
+impl core::fmt::Display for TransitionError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+// `core::error::Error` is available in no_std since Rust 1.81 (crate MSRV is 1.82).
+impl core::error::Error for TransitionError {}

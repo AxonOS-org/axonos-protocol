@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Denis Yermakou / AxonOS
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// This file is part of the AxonOS Consent Engine.
+// This file is part of the AxonOS Consent Protocol (ACP) reference implementation.
 // See LICENSE-APACHE or LICENSE-MIT for details.
 
 //! Reason code registry per the AxonOS Consent Protocol, Section 3.4.
@@ -41,5 +41,34 @@ impl ReasonCode {
     }
     pub fn is_implementation_specific(self) -> bool {
         (self as u8) >= 0x10
+    }
+
+    /// Stable, lowercase, hyphenated identifier for this reason code (§3.4).
+    ///
+    /// The returned string is part of the crate's public contract and is
+    /// suitable for structured logging and diagnostics.
+    ///
+    /// # Examples
+    /// ```
+    /// use axonos_protocol::ReasonCode;
+    /// assert_eq!(ReasonCode::UserInitiated.as_str(), "user-initiated");
+    /// ```
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Unspecified => "unspecified",
+            Self::UserInitiated => "user-initiated",
+            Self::SafetyViolation => "safety-violation",
+            Self::HardwareFault => "hardware-fault",
+            Self::StimGuardLockout => "stimguard-lockout",
+            Self::SessionAttestationFailure => "session-attestation-failure",
+            Self::EmergencyButton => "emergency-button",
+            Self::SwarmFaultDetected => "swarm-fault-detected",
+        }
+    }
+}
+
+impl core::fmt::Display for ReasonCode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.as_str())
     }
 }

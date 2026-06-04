@@ -12,7 +12,7 @@ authors:
   - family-names: Yermakou
     given-names: Denis
     affiliation: "The AxonOS Project"
-version: "0.8.0"
+version: "0.8.1"
 date-released: "2026-06-03"
 license: "Apache-2.0 OR MIT"
 repository-code: "https://github.com/AxonOS-org/axonos-protocol"

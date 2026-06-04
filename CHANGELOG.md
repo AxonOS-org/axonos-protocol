@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.8.1] - 2026-06-04
+
+### Fixed
+- Corrected stale metadata in the interop test vectors
+  (`tests/vectors/consent-interop-vectors-v0.1.0.json`): the `producer` field used
+  the pre-0.3.0 crate name (`axonos-consent` -> `axonos-protocol`), and the
+  `consumer` and `notes` fields referenced a now-decoupled external implementation.
+  The metadata now describes the file as a protocol-level conformance artifact for
+  any conforming AxonOS Consent Protocol implementation. **All 15 test vectors are
+  byte-identical and unchanged** -- only the `_meta` block was edited.
+  `tests/vectors/SHA256SUMS` was regenerated for the corrected file.
+
 ## [0.8.0] - 2026-06-03
 
 ### Added
@@ -114,6 +126,7 @@ revision (`SPEC.md`) are versioned independently of the crate.
   security-bounded CBOR codec, exhaustive three-state consent machine, reason-code
   registry, StimGuard contract, and frozen interop vectors.
 
+[0.8.1]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.8.1
 [0.8.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.8.0
 [0.7.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AxonOS-org/axonos-protocol/releases/tag/v0.6.0

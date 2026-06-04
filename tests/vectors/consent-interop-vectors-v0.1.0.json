@@ -2,16 +2,16 @@
   "_meta": {
     "description": "the AxonOS Consent Protocol — Interop Test Vectors",
     "spec": "SPEC.md",
-    "producer": "axonos-consent v0.1.0 (Rust, #![no_std])",
-    "consumer": "sym (Node.js) / sym-swift (iOS/macOS)",
+    "producer": "axonos-protocol v0.1.0 (Rust, #![no_std])",
+    "consumer": "any conforming AxonOS Consent Protocol implementation",
     "author": "Denis Yermakou <axonosorg@gmail.com>",
     "date": "2026-04-04",
     "notes": [
       "Each test case contains a canonical JSON frame (what the relay sees)",
       "and the expected ConsentEngine state transitions.",
       "Frame types are string identifiers per the AxonOS Consent Protocol (SPEC §7.)",
-      "Hongwei: feed the 'json' field to your Node.js frame parser.",
-      "If it doesn't throw, the interop surface is correct."
+      "To check an implementation, feed the 'json' field to the frame parser under test,",
+      "then assert the resulting ConsentEngine state matches 'state_after' and 'enforcement'."
     ]
   },
 

@@ -134,3 +134,133 @@ jobs:
         with:
           tool: cargo-audit
       - run: cargo audit
+
+  # ── added in 0.9.0: maximal CI surface ──────────────────────────────
+
+  typos:
+    name: Spelling (typos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@master
+
+  test-beta:
+    name: Test (beta)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@beta
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo +beta test --all-features --verbose
+
+  doctests:
+    name: Doctests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --doc --all-features --verbose
+
+  build-cortex-m33:
+    name: Bare-metal build (Cortex-M33)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv8m.main-none-eabihf
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --target thumbv8m.main-none-eabihf --no-default-features --release
+
+  miri:
+    name: Miri (UB detection)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo miri test (library)
+        run: cargo +nightly miri test --lib
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
+
+  coverage:
+    name: Coverage (llvm-cov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate coverage summary
+        run: cargo llvm-cov --all-features --summary-only
+
+  package:
+    name: Package (publish dry-run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo publish --dry-run
+
+  integrity:
+    name: Repository integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Licence files present
+        run: |
+          test -f LICENSE
+          test -f LICENSE-APACHE
+          test -f LICENSE-MIT
+          echo "all licence files present"
+      - name: SPDX identifier present
+        run: |
+          grep -q 'SPDX-License-Identifier: Apache-2.0 OR MIT' LICENSE
+          echo "SPDX identifier present"
+      - name: Frozen vectors present and verified
+        run: |
+          test -f tests/vectors/consent-interop-vectors-v0.1.0.json
+          test -f tests/vectors/SHA256SUMS
+          cd tests/vectors && sha256sum -c SHA256SUMS
+          echo "frozen vectors present and verified"
+
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - fmt
+      - clippy
+      - typos
+      - test
+      - test-beta
+      - msrv
+      - doctests
+      - docs
+      - no_std
+      - build-cortex-m33
+      - wasm
+      - miri
+      - vectors
+      - fuzz-build
+      - deny
+      - security
+      - coverage
+      - package
+      - integrity
+    steps:
+      - name: Verify all jobs succeeded
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || \
+             [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "one or more required jobs failed"
+            exit 1
+          fi
+          echo "all required CI jobs passed"

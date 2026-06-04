@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.9.0] - 2026-06-04
+
+### Added
+- **Continuous integration expanded to 20 jobs.** New: spelling (`typos`),
+  beta-toolchain tests (`test-beta`), isolated `doctests`, a second bare-metal
+  target Cortex-M33 / `thumbv8m.main-none-eabihf` (`build-cortex-m33`),
+  undefined-behaviour checking under Miri on the library core (`miri`),
+  line-coverage summary via `cargo-llvm-cov` (`coverage`), a crates.io packaging
+  dry-run (`package`), repository-integrity checks for licence files / SPDX /
+  frozen vectors (`integrity`), and an aggregate gate (`ci`) intended as the
+  single branch-protection required check.
+- **Top-level `LICENSE` dispatcher** (SPDX `Apache-2.0 OR MIT`). GitHub's licence
+  detector recognises the standard `LICENSE` filename but not `LICENSE-APACHE` /
+  `LICENSE-MIT`; this restores correct licence display. The per-licence texts are
+  unchanged.
+
+### Notes
+- No library or wire-format change: the public API and the frozen interop vectors
+  are identical to 0.8.1. This release hardens the verification surface and
+  repository hygiene only.
+
 ## [0.8.1] - 2026-06-04
 
 ### Fixed

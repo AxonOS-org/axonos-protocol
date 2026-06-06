@@ -1,20 +1,33 @@
 {
   "_meta": {
-    "description": "the AxonOS Consent Protocol — Interop Test Vectors",
+    "title": "AxonOS Consent Protocol — Interoperability Test Vectors",
+    "protocol": "AxonOS Consent Protocol",
+    "acronym": "ACP",
+    "wire_version": 1,
+    "spec_revision": "0.3",
+    "vector_version": "0.1.0",
+    "producer": "axonos-protocol",
+    "consumer": "any conforming ACP implementation",
+    "maintainer": "The AxonOS Project <connect@axonos.org>",
+    "authors": [
+      "Denis Yermakou",
+      "The AxonOS Project"
+    ],
+    "security_contact": "security@axonos.org",
+    "license": "Apache-2.0 OR MIT",
+    "status": "pre-clinical engineering artifact; not a medical device",
     "spec": "SPEC.md",
-    "producer": "axonos-protocol v0.1.0 (Rust, #![no_std])",
-    "consumer": "any conforming AxonOS Consent Protocol implementation",
-    "author": "Denis Yermakou <axonosorg@gmail.com>",
     "date": "2026-04-04",
+    "canonicalization": "Object key order in this file is deterministic for review and diffing; the normative frame semantics are defined in SPEC.md.",
     "notes": [
       "Each test case contains a canonical JSON frame (what the relay sees)",
       "and the expected ConsentEngine state transitions.",
       "Frame types are string identifiers per the AxonOS Consent Protocol (SPEC §7.)",
       "To check an implementation, feed the 'json' field to the frame parser under test,",
-      "then assert the resulting ConsentEngine state matches 'state_after' and 'enforcement'."
+      "then assert the resulting ConsentEngine state matches 'state_after' and 'enforcement'.",
+      "vector_version (0.1.0) is the version of THIS conformance vector set and is independent of the axonos-protocol crate version (0.9.0); the wire format is CONSENT_PROTOCOL_VERSION = 1 and is unchanged."
     ]
   },
-
   "vectors": [
     {
       "id": "TV-001",
@@ -37,7 +50,6 @@
         "nvram_persisted": true
       }
     },
-
     {
       "id": "TV-002",
       "name": "consent-withdraw: all peers, safety violation, real-time timestamps",
@@ -60,7 +72,6 @@
         "note": "scope:all — withdrawing node sends to ALL connected peers. Delivery is asynchronous — local enforcement completes first."
       }
     },
-
     {
       "id": "TV-003",
       "name": "consent-withdraw: AxonOS StimGuard lockout (implementation-specific reason 0x10)",
@@ -83,7 +94,6 @@
         "note": "reasonCode 0x10 (16) = STIMGUARD_LOCKOUT. Implementation-specific per Section 3.4."
       }
     },
-
     {
       "id": "TV-004",
       "name": "consent-suspend: focus mode",
@@ -104,7 +114,6 @@
         "note": "Peer MUST NOT send cognitive frames (state-sync, memory-share, mood, xmesh-insight). Transport frames (ping/pong, message, peer-info) continue."
       }
     },
-
     {
       "id": "TV-005",
       "name": "consent-suspend: minimal fields",
@@ -121,7 +130,6 @@
         "connection_closed": false
       }
     },
-
     {
       "id": "TV-006",
       "name": "consent-resume: after suspension",
@@ -139,7 +147,6 @@
         "note": "First state-sync after resume triggers cold re-init of coupling engine. Higher latency expected until steady-state."
       }
     },
-
     {
       "id": "TV-007",
       "name": "consent-resume: minimal fields",
@@ -155,7 +162,6 @@
         "connection_closed": false
       }
     },
-
     {
       "id": "TV-008",
       "name": "consent-withdraw: from suspended state",
@@ -174,7 +180,6 @@
         "connection_closed": true
       }
     },
-
     {
       "id": "TV-009",
       "name": "edge case: duplicate consent-suspend (idempotent)",
@@ -189,7 +194,6 @@
       "state_after": "suspended",
       "expected_behavior": "no-op, no error"
     },
-
     {
       "id": "TV-010",
       "name": "edge case: consent-resume while already granted (idempotent)",
@@ -203,7 +207,6 @@
       "state_after": "granted",
       "expected_behavior": "no-op, silently ignored"
     },
-
     {
       "id": "TV-011",
       "name": "edge case: consent-withdraw with hardware fault reason",
@@ -224,7 +227,6 @@
         "nvram_persisted": true
       }
     },
-
     {
       "id": "TV-012",
       "name": "edge case: consent-withdraw with unknown reason code",
@@ -240,7 +242,6 @@
       "state_after": "withdrawn",
       "expected_behavior": "accept frame, treat reasonCode as unspecified, proceed with withdrawal"
     },
-
     {
       "id": "TV-013",
       "name": "edge case: timestamp_us takes precedence over timestamp",
@@ -257,27 +258,35 @@
       "state_after": "withdrawn",
       "expected_behavior": "use timestamp_us (1711540800123456) as canonical time. timestamp (1711540800000) is informational backup."
     },
-
     {
       "id": "TV-014",
       "name": "gossip encoding: 2-bit consent state for BLE ATT MTU constraint",
       "description": "Compact consent state encoding for peer-info gossip frames. Section 6.4.",
       "section": "6.4",
       "gossip_encoding": {
-        "granted":   "0b00",
+        "granted": "0b00",
         "suspended": "0b01",
         "withdrawn": "0b10",
-        "reserved":  "0b11"
+        "reserved": "0b11"
       },
       "example_peer_info": {
         "type": "peer-info",
         "peers": [
-          {"nodeId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d", "name": "axonos-node-1", "consentState": "granted", "lastSeen": 1711540800000},
-          {"nodeId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b", "name": "sym-agent-2", "consentState": "withdrawn", "lastSeen": 1711540700000}
+          {
+            "nodeId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+            "name": "axonos-node-1",
+            "consentState": "granted",
+            "lastSeen": 1711540800000
+          },
+          {
+            "nodeId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+            "name": "sym-agent-2",
+            "consentState": "withdrawn",
+            "lastSeen": 1711540700000
+          }
         ]
       }
     },
-
     {
       "id": "TV-015",
       "name": "AxonOS-specific: emergency button bypass (reasonCode 0x12)",
@@ -302,7 +311,6 @@
       }
     }
   ],
-
   "reason_code_registry": {
     "_note": "Codes 0x00-0x0F: spec-reserved. Codes 0x10-0xFF: implementation-specific.",
     "spec_reserved": {
@@ -318,7 +326,6 @@
       "0x13": "SWARM_FAULT_DETECTED"
     }
   },
-
   "conformance_checklist": {
     "_note": "Section 10 conformance items. Each test vector maps to one or more items.",
     "general": [

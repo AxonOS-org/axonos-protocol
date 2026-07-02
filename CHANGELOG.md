@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The on-wire protocol version (`CONSENT_PROTOCOL_VERSION`) and the specification
 revision (`SPEC.md`) are versioned independently of the crate.
 
+## [0.9.1] - 2026-07-02
+
+### Changed
+- **Interop-vector metadata normalized**
+  (`tests/vectors/consent-interop-vectors-v0.1.0.json`). The `_meta` block now
+  carries explicit `wire_version`, `spec_revision` and `vector_version` fields,
+  the canonical project contacts (maintainer `connect@axonos.org`, security
+  `security@axonos.org`) in place of a stale private address, an SPDX `license`
+  field, and a status line stating the vectors are a pre-clinical engineering
+  artifact. `SHA256SUMS` regenerated to match. The 15 test cases — frames and
+  expected state transitions — are semantically identical to 0.9.0 (verified by
+  JSON-level comparison of the `vectors` array).
+
+### Fixed
+- **README crate badge was stale at `v0.8.1`** since the 0.9.0 release; it now
+  shows the released crate version.
+
+### Notes
+- No library or wire-format change: the public API is identical to 0.9.0 and
+  `CONSENT_PROTOCOL_VERSION` remains `1`. This is a metadata and
+  repository-hygiene release.
+
+
 ## [0.9.0] - 2026-06-04
 
 ### Added

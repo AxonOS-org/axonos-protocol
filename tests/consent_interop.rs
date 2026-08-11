@@ -122,6 +122,69 @@ fn sec_rejects_oversized_string() {
 }
 
 #[test]
+fn reason_truncation_lands_on_a_char_boundary() {
+    // 63 ASCII bytes plus a two-byte character = 65 bytes, so the 64-byte cut
+    // falls in the middle of the last character. A naive byte cut leaves
+    // invalid UTF-8, which as_str() resolves to "" — losing the whole reason
+    // instead of its tail, and only for non-ASCII text.
+    let mut long = "a".repeat(63);
+    long.push('é'); // 2 bytes
+    assert_eq!(long.len(), 65);
+
+    let r = ReasonBuf::new(&long);
+    assert_eq!(r.as_str(), "a".repeat(63), "reason must survive truncation");
+    assert_eq!(r.len(), 63, "cut backs off to the character boundary");
+
+    // A reason that fits is untouched, multi-byte or not.
+    let fits = "причина";
+    assert_eq!(ReasonBuf::new(fits).as_str(), fits);
+
+    // And a cut that already lands on a boundary keeps the full 64 bytes.
+    let exact = "b".repeat(70);
+    assert_eq!(ReasonBuf::new(&exact).len(), 64);
+}
+
+#[test]
+fn sec_rejects_indefinite_length_map() {
+    // 0xBF = major 5 (map), additional information 31 = indefinite length.
+    // Indefinite-length encoding has no declared bound, which is exactly what a
+    // bounded decoder must not accept: the length is the bound.
+    let bad = [0xBFu8];
+    assert_eq!(cbor::decode(&bad), Err(cbor::DecodeError::InvalidCbor));
+}
+
+#[test]
+fn sec_rejects_indefinite_length_text() {
+    // map(1), then 0x7F = text with AI=31 (indefinite) in the key position.
+    let bad = [0xA1u8, 0x7F];
+    assert_eq!(cbor::decode(&bad), Err(cbor::DecodeError::InvalidCbor));
+}
+
+#[test]
+fn sec_rejects_trailing_data() {
+    // A complete, valid consent-resume frame followed by one stray byte.
+    // Accepting it would let two concatenated frames decode as the first,
+    // silently discarding the second — a desynchronisation primitive.
+    let frame = ConsentFrame::Resume(ConsentResume {
+        timestamp_ms: Some(1),
+        timestamp_us: None,
+    });
+    let mut buf = [0u8; cbor::MAX_ENCODED_SIZE];
+    let n = cbor::encode(&frame, &mut buf).expect("encode");
+
+    // Exactly the frame: accepted.
+    assert!(cbor::decode(&buf[..n]).is_ok());
+
+    // One byte more: rejected.
+    let mut with_tail = buf[..n].to_vec();
+    with_tail.push(0x00);
+    assert_eq!(
+        cbor::decode(&with_tail),
+        Err(cbor::DecodeError::TrailingData)
+    );
+}
+
+#[test]
 fn sec_rejects_negative_int() {
     // map(1), text(4)"type", negative int(-1) = major 1
     let bad = [0xA1, 0x64, b't', b'y', b'p', b'e', 0x20]; // 0x20 = major 1, value 0
@@ -418,6 +481,16 @@ fn sm_gossip() {
     ] {
         assert_eq!(ConsentState::from_gossip_bits(s.to_gossip_bits()), Some(s));
     }
+}
+
+#[test]
+fn sm_gossip_rejects_unassigned_bit_pattern() {
+    // §6.4 assigns three of the four 2-bit patterns. The fourth is not a state
+    // and must not decode as one — a peer gossiping 0b11 is either a different
+    // protocol version or a fault, and either way must not be read as consent.
+    assert_eq!(ConsentState::from_gossip_bits(0b11), None);
+    // And nothing outside two bits decodes either.
+    assert_eq!(ConsentState::from_gossip_bits(0xFF), None);
 }
 
 // ═══════════════════════════════════════════════════════════════════

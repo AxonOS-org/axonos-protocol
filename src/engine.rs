@@ -32,6 +32,20 @@ pub const MAX_PEERS: usize = 8;
 /// Opaque peer identifier (AxonOS mesh node id, UUID v4).
 pub type PeerId = [u8; 16];
 
+// Persistence is deliberately absent from this crate.
+//
+// The interop vectors carry `nvram_persisted: true` because the *system* must
+// survive a power loss with WITHDRAWN intact — a consent that evaporates on
+// reset is not a consent. But this crate is the wire and state layer: it has no
+// storage medium, no wear-levelling policy and no way to make a write atomic
+// against a brownout, and a half-honest implementation of any of those would be
+// worse than none, because it would look like durability.
+//
+// The obligation belongs to the integrator (kernel or board support), which
+// owns the NVRAM and must restore peer state before the first frame is
+// processed and persist it on every transition into WITHDRAWN. `ConsentEngine`
+// exposes the state it holds so that layer can do both; see SPEC §11.
+
 #[derive(Debug, Clone)]
 pub struct PeerConsent {
     pub peer_id: PeerId,

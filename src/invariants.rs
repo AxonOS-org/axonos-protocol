@@ -25,9 +25,9 @@ use crate::state::ConsentState;
 
 /// Hard violation — frame MUST be rejected.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum InvariantViolation {
     /// §3.1: consent-withdraw MUST have scope.
-    WithdrawMissingScope,
     /// §4: WITHDRAWN is terminal. No transitions from WITHDRAWN.
     TransitionFromWithdrawn,
     /// §3.1: timestamp_us MUST be positive if present.
@@ -40,6 +40,7 @@ pub enum InvariantViolation {
 
 /// Soft warning — frame is valid but suboptimal per spec.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum InvariantWarning {
     /// §3.1: consent-withdraw SHOULD have timestamp or timestamp_us.
     WithdrawMissingTimestamp,

@@ -36,6 +36,7 @@ use crate::state::TransitionError;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[must_use]
+#[non_exhaustive]
 pub enum Error {
     /// L1: Wire-level decode failure (malformed CBOR, bounds exceeded).
     Decode(DecodeError),

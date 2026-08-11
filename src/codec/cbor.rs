@@ -52,6 +52,7 @@ const MAX_NESTING: u8 = 4;
 // ═══════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum DecodeError {
     UnexpectedEof,
     InvalidCbor,
@@ -68,9 +69,19 @@ pub enum DecodeError {
     StringTooLong,
     NestingTooDeep,
     DuplicateKey,
+    /// Bytes remain after a well-formed frame.
+    ///
+    /// §9: a consent frame is the *whole* payload. Accepting a valid frame
+    /// followed by unread bytes would let a framed transport desynchronise —
+    /// two concatenated frames would decode as the first one and the rest
+    /// would vanish — and would give an attacker a free padding oracle. The
+    /// frame either accounts for every byte handed to the decoder or it is
+    /// rejected.
+    TrailingData,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum EncodeError {
     /// Output buffer too small for the encoded frame.
     BufferTooSmall,
@@ -275,6 +286,12 @@ pub fn decode(data: &[u8]) -> Result<ConsentFrame, DecodeError> {
                 c.skip_value(0)?;
             }
         }
+    }
+
+    // The map is closed; nothing may follow it. Checked before the frame is
+    // built so that no partially-trusted value is ever handed back.
+    if c.pos != data.len() {
+        return Err(DecodeError::TrailingData);
     }
 
     // §3: "type" MUST be present

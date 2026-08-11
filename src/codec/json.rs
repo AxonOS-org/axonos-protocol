@@ -11,6 +11,49 @@ use crate::frames::*;
 #[cfg(feature = "json")]
 use crate::reason::ReasonCode;
 
+/// Failure from the validating JSON path.
+///
+/// Structured, unlike the `&str` of [`decode_value`], because a relay has to
+/// tell the two cases apart: malformed input is the sender's mistake, a MUST
+/// violation is a frame that parsed but may not be acted on.
+#[cfg(feature = "json")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum JsonDecodeError {
+    /// Not a well-formed consent frame.
+    Syntax(&'static str),
+    /// Parsed, but violates a MUST-level invariant (SPEC §10).
+    Invariant(crate::invariants::InvariantViolation),
+}
+
+/// Parse a consent frame from JSON **and** enforce the §10 MUST invariants.
+///
+/// This is the function a relay boundary wants. [`decode_value`] is a parser and
+/// nothing more — it will happily hand back a frame carrying a zero timestamp or
+/// an out-of-registry reason code, because on the CBOR side those are caught one
+/// layer later by [`crate::engine::ConsentEngine::process_raw`]. JSON has no
+/// equivalent single entry point, so a caller that skips the invariant check has
+/// no other layer to catch it. That gap is what this function closes.
+///
+/// State-transition legality (§4) is *not* checked here — it cannot be, since it
+/// depends on the peer's current state. Feed the returned frame to
+/// [`crate::engine::ConsentEngine::process_frame`] for that.
+#[cfg(feature = "json")]
+pub fn decode_value_checked(v: &serde_json::Value) -> Result<ConsentFrame, JsonDecodeError> {
+    let frame = decode_value(v).map_err(JsonDecodeError::Syntax)?;
+    let result = crate::invariants::check_frame(&frame);
+    // The violations array holds MUST-level findings only; SHOULD-level
+    // warnings live separately and are, by §10, not grounds for rejection.
+    if let Some(v) = result.violations.iter().flatten().copied().next() {
+        return Err(JsonDecodeError::Invariant(v));
+    }
+    Ok(frame)
+}
+
+/// Parse a consent frame from JSON. **Syntax only — no invariant checks.**
+///
+/// See [`decode_value_checked`] for the validating form, and prefer it at any
+/// boundary where the JSON did not come from a component you control.
 #[cfg(feature = "json")]
 pub fn decode_value(v: &serde_json::Value) -> Result<ConsentFrame, &'static str> {
     let obj = v.as_object().ok_or("expected JSON object")?;

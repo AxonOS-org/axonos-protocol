@@ -67,8 +67,24 @@ impl<G: DacGate> StimGuardConsent<G> {
         self.lockout_active
     }
 
-    /// Re-enable stimulation. Requires power cycle + re-handshake.
-    /// NOT callable during normal operation.
+    /// Re-enable stimulation after a withdrawal lockout.
+    ///
+    /// # This function enforces nothing — the caller is the control
+    ///
+    /// It clears the flag and opens the gate. It does not verify a power cycle,
+    /// a re-handshake, or an attestation, and it cannot: this crate is
+    /// `no_std`, holds no clock it trusts and no key, and a check written here
+    /// would be one an attacker in the same address space simply calls past.
+    ///
+    /// The requirement is therefore a *placement* obligation, and it is
+    /// binding: reachability of this function is the security property. It must
+    /// live behind the Secure-World boundary (or an equivalent privileged
+    /// path) and must not be exposed to Non-Secure code, an RPC surface, or any
+    /// caller that a withdrawal was meant to stop. A build in which
+    /// untrusted code can reach `clear_lockout` has no lockout.
+    ///
+    /// Reviewers: treat a call site outside the trusted boot/recovery path as a
+    /// finding, not a style question.
     pub fn clear_lockout(&mut self) {
         self.lockout_active = false;
         self.gate.open();

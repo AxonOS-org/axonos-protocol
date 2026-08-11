@@ -59,6 +59,58 @@ pub const CONSENT_PROTOCOL_VERSION: u8 = 1;
 /// Specification revision implemented by this crate. See `SPEC.md` and SPEC §12.
 pub const SPEC_REVISION: &str = "0.3";
 
+/// Status code signalled to a peer when consent has been withdrawn (SPEC §7.2).
+///
+/// Transport-level: the mesh binding puts this on the wire when a session ends
+/// because consent was withdrawn, so that a peer can distinguish a *withdrawal*
+/// from an ordinary disconnect. The distinction matters — a disconnect invites a
+/// reconnect, a withdrawal must not.
+pub const STATUS_CONSENT_WITHDRAWN: u16 = 2002;
+
+// On `#[non_exhaustive]`, and where it is deliberately absent.
+//
+// Error and registry enums — `Error`, `DecodeError`, `EncodeError`,
+// `InvariantViolation`, `InvariantWarning`, `TransitionError`, `ReasonCode` —
+// are `#[non_exhaustive]`. They grow as the implementation learns to reject
+// more, and a downstream `match` that breaks on every new rejection reason is
+// a maintenance tax with no safety return.
+//
+// `ConsentState`, `ConsentFrame` and `Scope` are deliberately NOT marked. They
+// are fixed by the wire format (§3, §4, §6.4 spends exactly two bits on state),
+// and their exhaustiveness is load-bearing: it is what makes a new state a
+// compile error rather than a silent `_ =>` arm in someone's consent handler.
+// Marking them would buy API flexibility by taking away the guarantee the
+// protocol exists to provide. If the wire ever gains a state or a frame type,
+// that is a `CONSENT_PROTOCOL_VERSION` bump and every implementor *should* be
+// made to look.
+
+// Three version numbers travel together and are deliberately independent:
+//
+//   crate version  (Cargo.toml, currently 0.9.x) — this implementation
+//   SPEC_REVISION  ("0.3")                       — the document it implements
+//   CONSENT_PROTOCOL_VERSION (1)                 — the bytes on the wire
+//
+// The wire version is the only one a peer can observe, and it moves only when
+// the encoding changes incompatibly. An implementation may be rewritten many
+// times, and the spec revised, without the wire version moving at all — which
+// is the point: interoperability is pinned to the format, not to the source.
+
+/// Wire codecs.
+///
+/// # These functions bypass the pipeline
+///
+/// [`codec::cbor::decode`] gives back a syntactically valid frame and nothing
+/// more. It does **not** run the §10 invariant checks and does **not** apply
+/// the §4 state transition — a frame decoded here may carry a zero timestamp,
+/// an out-of-registry reason code, or arrive at a peer whose consent is already
+/// `WITHDRAWN`.
+///
+/// [`engine::ConsentEngine::process_raw`] is the single entry point external
+/// code should use (SPEC §5.1): it decodes, checks invariants, applies the
+/// transition and drives the StimGuard callback, in that order and without a
+/// way to skip a step. This module is public because conformance suites, fuzz
+/// targets and other-language implementations need the codec on its own — not
+/// because decoding by hand is a supported way to consume consent frames.
 pub mod codec;
 pub mod engine;
 pub mod error;

@@ -34,6 +34,7 @@ pub enum ConsentState {
 
 /// Transition error.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TransitionError {
     /// WITHDRAWN is terminal (§4). No transitions allowed.
     AlreadyWithdrawn,

@@ -9,6 +9,7 @@
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+#[non_exhaustive]
 pub enum ReasonCode {
     Unspecified = 0x00,
     UserInitiated = 0x01,

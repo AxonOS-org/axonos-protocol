@@ -36,14 +36,32 @@ impl ReasonBuf {
         }
     }
 
-    /// Create from a string slice. Truncates if longer than MAX_REASON_LEN.
+    /// Create from a string slice, truncating to `MAX_REASON_LEN` bytes.
+    ///
+    /// # Truncation is silent, and lands on a character boundary
+    ///
+    /// A reason longer than the buffer is cut, not rejected: the reason is
+    /// audit context, and losing its tail is better than losing the frame that
+    /// carries it. Callers who need the full text must keep it themselves.
+    ///
+    /// The cut is moved back to a UTF-8 character boundary. Cutting mid-
+    /// character would leave invalid UTF-8 in the buffer, and [`Self::as_str`]
+    /// resolves invalid UTF-8 to `""` — so a naive byte cut would discard the
+    /// **entire** reason rather than its tail, and do it only for non-ASCII
+    /// text. This path is reachable from the wire: the decoder admits reason
+    /// strings up to `MAX_STRING_LEN` (128 B) and hands them here, where the
+    /// bound is 64 B.
     pub fn new(s: &str) -> Self {
         let bytes = s.as_bytes();
-        let copy_len = if bytes.len() > MAX_REASON_LEN {
+        let mut copy_len = if bytes.len() > MAX_REASON_LEN {
             MAX_REASON_LEN
         } else {
             bytes.len()
         };
+        // Walk back at most three bytes to the start of a character.
+        while copy_len > 0 && !s.is_char_boundary(copy_len) {
+            copy_len -= 1;
+        }
         let mut buf = [0u8; MAX_REASON_LEN];
         let mut i = 0;
         while i < copy_len {

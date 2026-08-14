@@ -222,7 +222,9 @@ jobs:
           echo "all licence files present"
       - name: SPDX identifier present
         run: |
-          grep -q 'SPDX-License-Identifier: Apache-2.0 OR MIT' LICENSE
+          grep -q 'SPDX-License-Identifier: Apache-2.0 OR MIT' LICENSING.md
+          head -1 LICENSE | grep -qi 'MIT License'
+          test -f LICENSE-APACHE && test -f LICENSE-MIT
           echo "SPDX identifier present"
       - name: Frozen vectors present and verified
         run: |

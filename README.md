@@ -215,6 +215,5 @@ be dual-licensed as above, without any additional terms or conditions.
 
 **The AxonOS Project** · [axonos.org](https://axonos.org) · connect@axonos.org · security@axonos.org
 [medium.com/@AxonOS](https://medium.com/@AxonOS) · [github.com/AxonOS-org](https://github.com/AxonOS-org)
-Singapore · Zurich · Berlin · Milano · San Mateo
 
 </div>
